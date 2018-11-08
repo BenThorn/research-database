@@ -23,7 +23,40 @@ app.get('/client.js', (request, response) =>{
   response.write(js);
   response.end();
 });
-// app.get('/login', main.login);
+
+app.post('/login', (request, response) => {
+  console.log(request.body);
+  const postData = query.stringify({
+    username: `${request.body.username}`,
+    password: `${request.body.pass}`
+  });
+
+  console.log(postData);
+
+  const postOptions = {
+    host: 'backend',
+    port: '80',
+    path: '/login',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Content-Length': Buffer.byteLength(postData)
+    }
+  };
+
+  request.on('error', (err) => {
+    console.dir(err);
+    res.statusCode = 400;
+    res.end();
+  });
+
+  response.on('data', (chunk) => {
+    console.log('Response: ', chunk);
+  });
+
+  request.write(postData);
+  request.end();
+});
 
 app.listen(port, (err) => {
   if(err) {
