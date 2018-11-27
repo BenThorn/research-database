@@ -25,10 +25,13 @@ app.get('/client.js', (request, response) =>{
 });
 
 app.post('/login', (request, response) => {
-  console.log(request.body);
+  const req = request;
+  const res = response;
+  console.log(req.body);
+  
   const postData = query.stringify({
-    username: `${request.body.username}`,
-    password: `${request.body.pass}`
+    username: `${req.body.username}`,
+    password: `${req.body.pass}`
   });
 
   console.log(postData);

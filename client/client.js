@@ -2,7 +2,7 @@ const sendAjax = (type, action, data) => {
     console.log(data);
     $.ajax({
       cache: false,
-      type: type,
+      type: "POST",
       url: action,
       data: data,
       dataType: "json",
@@ -23,8 +23,7 @@ const handleLogin = (e) => {
         alert('Please fill in all fields');
         return false;
     }
-
-    sendAjax('POST', '/login', $("#loginForm").serialize());
+    sendAjax('POST', "/login", $("#loginForm").serialize());
 };
 
 const init = () => {
