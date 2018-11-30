@@ -9,6 +9,9 @@ const getJSON = require('get-json');
 const main = require('./main.js');
 const index = fs.readFileSync(`${__dirname}/../client/index.html`);
 const js = fs.readFileSync(`${__dirname}/../client/client.js`);
+const css = fs.readFileSync(`${__dirname}/../client/styles.css`);
+const facultyLogo = fs.readFileSync(`${__dirname}/../client/facultylogo.png`);
+const userLogo = fs.readFileSync(`${__dirname}/../client/userlogo.png`);
 
 const port = process.env.PORT || process.env.NODE_PORT || 3000;
 
@@ -26,6 +29,24 @@ app.get('/', (request, response) =>{
 app.get('/client.js', (request, response) =>{
   response.writeHead(200, { 'Content-Type': 'application/javascript' });
   response.write(js);
+  response.end();
+});
+
+app.get('/styles.css', (request, response) => {
+  response.writeHead(200, { 'Content-Type': 'text/css' });
+  response.write(css);
+  response.end();
+});
+
+app.get('/facultylogo.png', (request, response) => {
+  response.writeHead(200, { 'Content-Type': 'image/png' });
+  response.write(facultyLogo);
+  response.end();
+});
+
+app.get('/userlogo.png', (request, response) => {
+  response.writeHead(200, { 'Content-Type': 'image/png' });
+  response.write(userLogo);
   response.end();
 });
 
@@ -71,32 +92,11 @@ app.get('/client.js', (request, response) =>{
 // });
 
 app.get('/getAllStudents', (request, response) => {
-  
-  // const getOptions = {
-  //   host: 'http://serenity.ist.rit.edu/~ra7918/330/research_database/api',
-  //   port: '80',
-  //   path: '/user/getAllStudents.php',
-  //   method: 'GET',
-  //   headers: {
-  //     'Content-Type': 'application/json'
-  //   }
-  // };
-
   const url = 'http://serenity.ist.rit.edu/~ra7918/330/research_database/api/user/getAllStudents.php';
 
-  getJSON(url, (error, res) => {
-    if (!error) {
-      const object = {
-        data: res.data,
-      };
-      console.log(res);
-      return response.json({user: 'Ben'});
-    } else {
-      console.log(error);
-    }
+  return response.json({
+    results: [{"name":"Rix A.", "userId":"1","username":"rix","role":"student","searching":"1","interests":"[\"Math\",\"Science\",\"General\"]","rating":"4","bio":"This is my bio!","gradDate":"05\/24\/2020"},{"name": "Ben T.","userId":"2","username":"ben","role":"student","searching":"0","interests":"[\"Math\"]","rating":"5","bio":"Not my bio","gradDate":"05\/24\/2019"}]
   });
-
-  
 });
 
 app.listen(port, (err) => {

@@ -17,6 +17,7 @@
     "fs": "0.0.1-security",
     "get-json": "^1.0.1",
     "http": "0.0.0",
-    "querystring": "^0.2.0"
+    "querystring": "^0.2.0",
+    "scalem": "^1.2.0"
   }
 }
