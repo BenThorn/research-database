@@ -7,7 +7,10 @@ const bodyParser = require('body-parser');
 const getJSON = require('get-json');
 
 const main = require('./main.js');
-const index = fs.readFileSync(`${__dirname}/../client/index.html`);
+const index = fs.readFileSync(`${__dirname}/../client/homepage.html`);
+const research = fs.readFileSync(`${__dirname}/../client/research.html`);
+const settings = fs.readFileSync(`${__dirname}/../client/settings.html`);
+const login = fs.readFileSync(`${__dirname}/../client/login.html`);
 const js = fs.readFileSync(`${__dirname}/../client/client.js`);
 const css = fs.readFileSync(`${__dirname}/../client/styles.css`);
 const facultyLogo = fs.readFileSync(`${__dirname}/../client/facultylogo.png`);
@@ -23,6 +26,30 @@ app.use(bodyParser.json());
 app.get('/', (request, response) =>{
   response.writeHead(200, { 'Content-Type': 'text/html' });
   response.write(index);
+  response.end();
+});
+
+app.get('/homepage.html', (request, response) =>{
+  response.writeHead(200, { 'Content-Type': 'text/html' });
+  response.write(index);
+  response.end();
+});
+
+app.get('/research.html', (request, response) =>{
+  response.writeHead(200, { 'Content-Type': 'text/html' });
+  response.write(research);
+  response.end();
+});
+
+app.get('/settings.html', (request, response) =>{
+  response.writeHead(200, { 'Content-Type': 'text/html' });
+  response.write(settings);
+  response.end();
+});
+
+app.get('/login.html', (request, response) =>{
+  response.writeHead(200, { 'Content-Type': 'text/html' });
+  response.write(login);
   response.end();
 });
 
@@ -96,6 +123,101 @@ app.get('/getAllStudents', (request, response) => {
 
   return response.json({
     results: [{"name":"Rix A.", "userId":"1","username":"rix","role":"student","searching":"1","interests":"[\"Math\",\"Science\",\"General\"]","rating":"4","bio":"This is my bio!","gradDate":"05\/24\/2020"},{"name": "Ben T.","userId":"2","username":"ben","role":"student","searching":"0","interests":"[\"Math\"]","rating":"5","bio":"Not my bio","gradDate":"05\/24\/2019"}]
+  });
+});
+
+app.get('/getStudentInfo', (request, response) => {
+  let url = 'http://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/getStudent.php?';
+  let options = '';
+  options += 'studentId=' + 2;
+
+  url += options;
+  console.log(url);
+
+  getJSON(url, (error, res) => {
+    if (!error) {
+      console.log(res);
+      return response.json(res);
+    } else {
+      console.log(error);
+      return error;
+    }
+  });
+});
+
+app.get('/getAllResearch', (request, response) => {
+  let url = 'http://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/research/getAll.php';
+
+  const apiReq = http.get(url, (res) => {
+    res.on('err', (err) => {
+      console.log(err);
+    });
+
+    res.setEncoding('utf8');
+    let rawData = '';
+    res.on('data', (chunk) => { rawData += chunk; });
+    res.on('end', () => {
+      try {
+        const parsedData = JSON.parse(rawData);
+        console.log(parsedData);
+        return response.json(parsedData);
+      } catch (e) {
+        console.error(e.message);
+      }
+    });
+  });
+});
+
+app.get('/loadUser', (request, response) => {
+  const url = 'http://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/get.php?userId=1';
+
+  getJSON(url, (error, res) => {
+    if (!error) {
+      console.log(res);
+      return response.json(res);
+    } else {
+      console.log(error);
+      return error;
+    }
+  });
+});
+
+app.post('/updateStudent', (request, response) => {
+  const url = 'http://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/updateStudent.php';
+  const postData = query.stringify({
+    studentId: request.body.studentId,
+    searching: request.body.searching,
+    interests: request.body['interests[]'],
+    bio: request.body.bio
+  });
+
+  console.log(postData);
+  
+  const options = {
+    hostname: 'http://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user',
+    port: 80,
+    path: '/updateStudent.php',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Content-Length': Buffer.byteLength(postData)
+    }
+  };
+  
+  const req = http.request(options, (res) => {
+    console.log(`STATUS: ${res.statusCode}`);
+    console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
+    res.setEncoding('utf8');
+    res.on('data', (chunk) => {
+      console.log(`BODY: ${chunk}`);
+    });
+    res.on('end', () => {
+      console.log('No more data in response.');
+    });
+  });
+  
+  req.on('error', (e) => {
+    console.error(`problem with request: ${e.message}`);
   });
 });
 
