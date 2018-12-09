@@ -137,6 +137,7 @@ function toggleBtn(item){ //change logic to json availability returned data late
 const loadStudentProfile = () => {
   loadUser();
   sendAjax('GET', '/getStudentInfo', null, (data) => {
+    console.log(data);
 
     let initial;
 
@@ -148,7 +149,8 @@ const loadStudentProfile = () => {
 
     document.querySelector('#desc').value = data.studentData.bio;
 
-    const interests = JSON.parse(data.studentData.interests);
+    const interests = JSON.parse(data.interests);
+    console.log(interests);
     
     const checks = document.querySelectorAll('input[type=checkbox]');
     
@@ -173,14 +175,25 @@ const loadStudentProfile = () => {
     });
 
     const options = {
-      userId: 1,
+      studentId: 2,
       searching: 1,
       interests: interestList,
       bio: $('#desc').val()
     };
     console.dir(options);
-    sendAjax('POST', '/updateStudent', options, (res) => {
-      console.log(res);
+    $.ajax({
+      cache: false,
+      type: type,
+      url: 'http://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/updateStudent.php',
+      data: options,
+      dataType: "json",
+      success: () => {
+
+      },
+      error: function(xhr, status, error) {
+        var messageObj = JSON.parse(xhr.responseText);
+        console.log(messageObj.error);
+      }
     });
   });
 };

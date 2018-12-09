@@ -5,6 +5,8 @@ const fs = require('fs');
 const express = require('express');
 const bodyParser = require('body-parser');
 const getJSON = require('get-json');
+const session = require('express-session');
+const $ = require('jquery');
 
 const main = require('./main.js');
 const index = fs.readFileSync(`${__dirname}/../client/homepage.html`);
@@ -129,14 +131,12 @@ app.get('/getAllStudents', (request, response) => {
 app.get('/getStudentInfo', (request, response) => {
   let url = 'http://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/getStudent.php?';
   let options = '';
-  options += 'studentId=' + 2;
+  options += 'studentId=' + 1;
 
   url += options;
-  console.log(url);
 
   getJSON(url, (error, res) => {
     if (!error) {
-      console.log(res);
       return response.json(res);
     } else {
       console.log(error);
@@ -173,7 +173,6 @@ app.get('/loadUser', (request, response) => {
 
   getJSON(url, (error, res) => {
     if (!error) {
-      console.log(res);
       return response.json(res);
     } else {
       console.log(error);
@@ -183,42 +182,39 @@ app.get('/loadUser', (request, response) => {
 });
 
 app.post('/updateStudent', (request, response) => {
-  const url = 'http://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/updateStudent.php';
-  const postData = query.stringify({
+//  const url = 'http://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/updateStudent.php';
+  console.log(request.body);;
+  const postData = JSON.stringify({
     studentId: request.body.studentId,
     searching: request.body.searching,
     interests: request.body['interests[]'],
     bio: request.body.bio
   });
-
   console.log(postData);
-  
   const options = {
-    hostname: 'http://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user',
-    port: 80,
-    path: '/updateStudent.php',
+    hostname: 'ist-serenity.main.ad.rit.edu',
+    path: '/~iste330t23/research_database/api/user/updateStudent.php',
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'Content-Length': Buffer.byteLength(postData)
-    }
+    form: postData,
   };
   
-  const req = http.request(options, (res) => {
-    console.log(`STATUS: ${res.statusCode}`);
-    console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
-    res.setEncoding('utf8');
-    res.on('data', (chunk) => {
-      console.log(`BODY: ${chunk}`);
-    });
-    res.on('end', () => {
-      console.log('No more data in response.');
-    });
+  const body = JSON.stringify({
+    "foo": "bar"
   });
-  
-  req.on('error', (e) => {
-    console.error(`problem with request: ${e.message}`);
-  });
+  console.log(body);
+
+  var request = new http.ClientRequest({
+      hostname: 'ist-serenity.main.ad.rit.edu',
+      port: 80,
+      path: '/~iste330t23/research_database/api/user/updateStudent.php',
+      method: "POST",
+      headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "Content-Length": Buffer.byteLength(body)
+      }
+  })
+
+  request.end(body);
 });
 
 app.listen(port, (err) => {
