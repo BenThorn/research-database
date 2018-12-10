@@ -110,7 +110,7 @@ span{
 }
 
 #paragraph{
-	flex: 3;
+	flex: 1;
 }
 
 #onButtonDiv{
@@ -159,6 +159,10 @@ span{
 	margin-left: 10%;
 }
 
+#createContent{
+	margin-left: 10%;
+}
+
 #descContent p{
 	font-size: 120%;
 	border-width: 1px;
@@ -183,11 +187,44 @@ span{
 	transition: all 0.5s;
 }
 
+#createContent p{
+	font-size: 120%;
+	border-width: 1px;
+    border-color: #3d3d3d;
+    border-style: solid;
+    padding-bottom: 1%;
+    margin-right: 95vh;
+    border-top: none;
+    border-right: none;
+    border-left: none;
+}
+
+#createSubmit{
+	display: list-item;
+	background-color: #3d3d3d;
+	color: white;
+	padding: 10px 15px;
+	margin-top: .5%;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+	transition: all 0.5s;
+}
+
 #descSubmit:hover{
 	background-color:#53a7ea;
 }
 
+#createSubmit:hover{
+	background-color:#53a7ea;
+}
+
 #desc{
+	height: 10vh;
+	width: 33%;
+}
+
+#create{
 	height: 10vh;
 	width: 33%;
 }
@@ -210,7 +247,7 @@ span{
 	width: auto;
 	overflow-y: auto;
 
-	display: flex;
+	/* display: flex; */
 	flex-direction: column;
 }
 
@@ -469,7 +506,27 @@ span{
     border-radius: 3px;
 }
 
+.createResearchDiv{
+	margin-left: 10%;
+}
+
+.createResearchDiv button{
+	background-color: #df7874;
+    color: white;
+    font-size: 1.5rem;
+    padding: .5%;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-top: 1%;
+    border-radius: 3px;
+}
+
 .researchInfoSection button:hover{
+	background-color: #53a7ea;
+}
+
+.createResearchDiv button:hover{
 	background-color: #53a7ea;
 }
 
@@ -694,10 +751,23 @@ a{
     background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
 }
 
+.modal2 {
+	display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
 /* Modal Content/Box */
 .modal-content {
     background-color: #fefefe;
-    display: inline-block;
+    display: flex;
     margin-top: 30vh;
     margin-left: auto;
     margin-right: auto;
@@ -705,6 +775,18 @@ a{
     border: 1px solid #888;
     width: 50%;
     height: 30%;
+}
+
+.modal-content2 {
+    background-color: #fefefe;
+    display: flex;
+    margin-top: 30vh;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 70%;
+    height: 50%;
 }
 
 /* The Close Button */
@@ -724,6 +806,9 @@ a{
 
 #btnDiv{
 	display: flex;
+	flex-direction: column;
+	flex: 1;
+	padding-right: 2%;
 }
 
 #btnDiv p{
@@ -737,7 +822,7 @@ a{
 	color: white;
 	padding: 16px;
 	margin-left: 15%;
-	margin-top: 2vh;
+	margin-top: 19vh;
 	font-size: 16px;
 	border-radius: 5px;
 	border: none;
@@ -749,5 +834,70 @@ a{
     background-color: #53a7ea;
 }
 
+#emptySpace{
+	flex: 1;
+}
 
-/* Modal Window End 
+/* Modal Window End  */
+
+.checkBoxDiv {
+    display: block;
+    position: relative;
+    cursor: pointer;
+    margin-right: 3%;
+    margin-top: 2%;
+    margin-bottom: 2%;
+    font-size: 22px;
+    flex: 7;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.checkBoxDiv input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 25px;
+    width: 25px;
+    background-color: #eee;
+}
+
+.checkBoxDiv:hover input ~ .checkmark {
+    background-color: #ccc;
+}
+
+.checkBoxDiv input:checked ~ .checkmark {
+    background-color: #5a5a5a;
+}
+
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+.checkBoxDiv input:checked ~ .checkmark:after {
+    display: block;
+}
+
+.checkBoxDiv .checkmark:after {
+    left: 9px;
+    top: 5px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 3px 3px 0;
+    -webkit-transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    transform: rotate(45deg);
+}

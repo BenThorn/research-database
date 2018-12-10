@@ -7,12 +7,13 @@ const bodyParser = require('body-parser');
 const getJSON = require('get-json');
 const session = require('express-session');
 const $ = require('jquery');
+const axios = require('axios');
 
-const main = require('./main.js');
 const index = fs.readFileSync(`${__dirname}/../client/homepage.html`);
 const research = fs.readFileSync(`${__dirname}/../client/research.html`);
 const settings = fs.readFileSync(`${__dirname}/../client/settings.html`);
 const login = fs.readFileSync(`${__dirname}/../client/login.html`);
+const register = fs.readFileSync(`${__dirname}/../client/register.html`);
 const js = fs.readFileSync(`${__dirname}/../client/client.js`);
 const css = fs.readFileSync(`${__dirname}/../client/styles.css`);
 const facultyLogo = fs.readFileSync(`${__dirname}/../client/facultylogo.png`);
@@ -24,8 +25,17 @@ const app = express();
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(session({
+    key: 'sessionId',
+    secret : 'team23',
+    resave: true,
+    saveUninitialized: true,
+  }
+));
 
 app.get('/', (request, response) =>{
+  request.session.userId = 2;
+  request.session.loggedIn = true;
   response.writeHead(200, { 'Content-Type': 'text/html' });
   response.write(index);
   response.end();
@@ -55,6 +65,12 @@ app.get('/login.html', (request, response) =>{
   response.end();
 });
 
+app.get('/register.html', (request, response) => {
+  response.writeHead(200, { 'Content-Type': 'text/html' });
+  response.write(register);
+  response.end();
+});
+
 app.get('/client.js', (request, response) =>{
   response.writeHead(200, { 'Content-Type': 'application/javascript' });
   response.write(js);
@@ -79,59 +95,35 @@ app.get('/userlogo.png', (request, response) => {
   response.end();
 });
 
-// app.post('/login', (request, response) => {
-//   const req = request;
-//   const res = response;
-//   console.log(req.body);
-  
-//   const postData = query.stringify({
-//     username: `${req.body.username}`,
-//     password: `${req.body.pass}`
-//   });
-
-//   console.log(postData);
-
-//   const postOptions = {
-//     host: 'backend',
-//     port: '80',
-//     path: '/login',
-//     method: 'POST',
-//     headers: {
-//       'Content-Type': 'application/json',
-//       'Content-Length': Buffer.byteLength(postData)
-//     }
-//   };
-
-//   /**
-//    * For get, append 
-//    */
-
-//   request.on('error', (err) => {
-//     console.dir(err);
-//     res.statusCode = 400;
-//     res.end();
-//   });
-
-//   response.on('data', (chunk) => {
-//     console.log('Response: ', chunk);
-//   });
-
-//   request.write(postData);
-//   request.end();
-// });
+// API calls
 
 app.get('/getAllStudents', (request, response) => {
-  const url = 'http://serenity.ist.rit.edu/~ra7918/330/research_database/api/user/getAllStudents.php';
+  const url = 'http://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/getAllStudents.php';
 
-  return response.json({
-    results: [{"name":"Rix A.", "userId":"1","username":"rix","role":"student","searching":"1","interests":"[\"Math\",\"Science\",\"General\"]","rating":"4","bio":"This is my bio!","gradDate":"05\/24\/2020"},{"name": "Ben T.","userId":"2","username":"ben","role":"student","searching":"0","interests":"[\"Math\"]","rating":"5","bio":"Not my bio","gradDate":"05\/24\/2019"}]
+  const apiReq = http.get(url, (res) => {
+    res.on('err', (err) => {
+      console.log(err);
+    });
+
+    res.setEncoding('utf8');
+    let rawData = '';
+    res.on('data', (chunk) => { rawData += chunk; });
+    res.on('end', () => {
+      try {
+        const parsedData = JSON.parse(rawData);
+        return response.json(parsedData);
+      } catch (e) {
+        console.log('error');
+        console.error(e.message);
+      }
+    });
   });
 });
 
 app.get('/getStudentInfo', (request, response) => {
   let url = 'http://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/getStudent.php?';
   let options = '';
-  options += 'studentId=' + 1;
+  options += 'studentId=' + request.session.userId;
 
   url += options;
 
@@ -143,6 +135,19 @@ app.get('/getStudentInfo', (request, response) => {
       return error;
     }
   });
+});
+
+// YOU WERE GIVING THE SESSION USERID BACK TO THE CLIENT
+app.get('/returnSession', (request, response) => {
+  if(request.session){
+    return response.json({
+      userId: request.session.userId, 
+      userRole: request.session.userRole, 
+      userName: request.session.userName
+    });
+  } else {
+    return response.json({message: 'No session available'});
+  }
 });
 
 app.get('/getAllResearch', (request, response) => {
@@ -159,9 +164,9 @@ app.get('/getAllResearch', (request, response) => {
     res.on('end', () => {
       try {
         const parsedData = JSON.parse(rawData);
-        console.log(parsedData);
         return response.json(parsedData);
       } catch (e) {
+        console.log('error');
         console.error(e.message);
       }
     });
@@ -169,52 +174,40 @@ app.get('/getAllResearch', (request, response) => {
 });
 
 app.get('/loadUser', (request, response) => {
-  const url = 'http://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/get.php?userId=1';
 
-  getJSON(url, (error, res) => {
-    if (!error) {
-      return response.json(res);
-    } else {
-      console.log(error);
-      return error;
-    }
-  });
+  if(request.session.loggedIn) {
+    const url = 'http://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/get.php?userId=' + request.session.userId;
+
+    getJSON(url, (error, res) => {
+      if (!error) {
+        request.session.userRole = res.role;
+        request.session.userName = res.name;
+        return response.json(res);
+      } else {
+        console.log('error');
+        return error;
+      }
+    });
+  } else {
+    return response.json({"role": "Guest"});
+  }
+ 
 });
 
-app.post('/updateStudent', (request, response) => {
-//  const url = 'http://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/updateStudent.php';
-  console.log(request.body);;
-  const postData = JSON.stringify({
-    studentId: request.body.studentId,
-    searching: request.body.searching,
-    interests: request.body['interests[]'],
-    bio: request.body.bio
-  });
-  console.log(postData);
-  const options = {
-    hostname: 'ist-serenity.main.ad.rit.edu',
-    path: '/~iste330t23/research_database/api/user/updateStudent.php',
-    method: 'POST',
-    form: postData,
-  };
-  
-  const body = JSON.stringify({
-    "foo": "bar"
-  });
-  console.log(body);
+app.post('/login', (request, response) => {
+  request.session.userId = request.body.userId;
+  request.session.loggedIn = true;
+  console.log(request.session.userId);
+  console.log('login');
+  return response.json({"message": "success"});
+});
 
-  var request = new http.ClientRequest({
-      hostname: 'ist-serenity.main.ad.rit.edu',
-      port: 80,
-      path: '/~iste330t23/research_database/api/user/updateStudent.php',
-      method: "POST",
-      headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-          "Content-Length": Buffer.byteLength(body)
-      }
-  })
-
-  request.end(body);
+app.get('/signout', (request, response) => {
+  if(request.session) {
+    request.session.destroy();
+  }
+  console.log('signout');
+  return response.json({"message": "logged out"});
 });
 
 app.listen(port, (err) => {

@@ -9,7 +9,7 @@
 
 	<link rel="stylesheet" href="styles.css">
 
-	<title>Project Login</title>
+	<title>Project Registration</title>
 </head>
 
 <body>
@@ -20,18 +20,21 @@
 
 		<div id="signIn">
 			<h1 id="loginLogo"><span>RIT</span> Research Search</h1>
-			<div class="intro"><p>Welcome back! Login to access your streamlined research connection platform. Though, maybe you've <a href='#'>forgot your password?</a></p></div>
+			<div class="intro"><p>Register to access your streamlined research connection platform. Though, maybe you've</p></div>
 			<form>
 			<div>
-				<label>Email or Username</label>
-				<input type="text" class="text-input" /> 
+				<label>Username</label>
+				<input id="user" type="text" class="text-input" /> 
+				<label>Name</label>
+				<input id="name" type="name" class="text-input" /> 
+				<label>Role</label>
+				<input id="role" type="name" class="text-input" /> 
 				<label>Password</label>
-				<input type="password" class="text-input" />
+				<input id="pass" type="password" class="text-input" />
 			</div>
-			<a href="homepage.html"><button type="submit" class="primary-btn">Login</button></a>
+			<a href="login.html"><button type="submit" class="primary-btn">Register</button></a>
 			</form>
-    </div>
-    <a href="register.html"><button>Sign Up</button></a>
+		</div>
 		<footer id="loginFooter">
 		<p>Copyright &copy; 2018 Group23 All Rights Reserved</p>
 		</footer>
@@ -43,10 +46,10 @@
 </div>
 </body>
 <script>
-  $(document).ready(() => {
+    $(document).ready(() => {
     $('.primary-btn').click((e) => {
       e.preventDefault();
-      login();
+      signup();
     });
   });
 </script>
