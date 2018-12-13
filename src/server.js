@@ -34,8 +34,6 @@ app.use(session({
 ));
 
 app.get('/', (request, response) =>{
-  request.session.userId = 2;
-  request.session.loggedIn = true;
   response.writeHead(200, { 'Content-Type': 'text/html' });
   response.write(index);
   response.end();

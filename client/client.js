@@ -14,7 +14,6 @@ const sendAjax = (type, action, data, callback) => {
   };
 
 const handleGetAllStudents = () => {
-  console.log('get');
   sendAjax("GET", "/getAllStudents", null, (data) => {
     var results = Object.keys(data).map(function(key) {
       return [Number(key), data[key]];
@@ -104,13 +103,34 @@ const handleGetAllResearch = () => {
       $(cat).append(catP);
 
       $(dataFrame).append(name, desc, cat);
-
+      console.log(result.researchId);
       if($('#userType').text() === 'Student') {
         $(dataFrame).click((e) => {
           $(".modal").css('display', 'block');
+          $("#modalName").text(`${result.name}`);
           $("#modalDesc").text(`${result.description}`);
           $('.modalBtn').click((e) => {
-            
+            sendAjax('GET', '/returnSession', null, (session) => {
+              const options = {
+                researchId: result.researchId,
+                studentId: session.userId
+              }
+              console.log(options);
+              $.ajax({
+                cache: false,
+                type: "POST",
+                url: 'http://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/assignStudent.php',
+                data: options,
+                dataType: "json",
+                success: (res) => {
+                  console.log(res);
+                  location.reload();
+                },
+                error: function(xhr, status, error) {
+                  console.log(error);
+                }
+              });
+            });
           });
         });
       }
