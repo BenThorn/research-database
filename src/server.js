@@ -135,16 +135,40 @@ app.get('/getStudentInfo', (request, response) => {
   });
 });
 
+app.get('/getProfessorInfo', (request, response) => {
+  let url = 'http://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/getProfessor.php?';
+  let options = '';
+  options += 'professorId=' + request.session.userId;
+
+  url += options;
+
+  getJSON(url, (error, res) => {
+    if (!error) {
+      return response.json(res);
+    } else {
+      console.log(error);
+      return error;
+    }
+  });
+});
+
 // YOU WERE GIVING THE SESSION USERID BACK TO THE CLIENT
 app.get('/returnSession', (request, response) => {
   if(request.session){
-    return response.json({
+    let info = {
       userId: request.session.userId, 
       userRole: request.session.userRole, 
       userName: request.session.userName
-    });
+    };
+
+    if(request.session.loggedIn){
+      info.loggedIn = request.session.loggedIn;
+    } else {
+      info.loggedIn = false;
+    }
+    return response.json(info);
   } else {
-    return response.json({message: 'No session available'});
+    return response.json({"message": 'No session available'});
   }
 });
 

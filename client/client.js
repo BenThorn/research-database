@@ -68,7 +68,8 @@ const handleGetAllResearch = () => {
     const results = data.data;
     console.log(results);
     $("#frameContent").empty();
-    results.forEach((result) => {
+    Object.values(results).forEach((dataObject) => {
+      const result = dataObject.data;
       const dataFrame = document.createElement('div');
       dataFrame.className = "dataFrame";
 
@@ -141,36 +142,40 @@ const handleGetAllResearch = () => {
 
 const loadStudentProfile = () => {
   loadUser();
-  sendAjax('GET', '/getStudentInfo', null, (data) => {
-    console.log(data);
-
-    let initial;
-
-    if(data.studentData.searching === '1') {
-      initial = true;
+  sendAjax('GET', '/returnSession', null , (session) => {
+    if(!session.loggedIn) {
+      window.location.href = '/homepage.html';
     } else {
-      initial = false;
-    }
-
-    document.querySelector('#desc').value = data.studentData.bio;
-
-    const interests = data.interests;
-    const checks = document.querySelectorAll('input[type=checkbox]');
+      sendAjax('GET', '/getStudentInfo', null, (data) => {
+        console.log(data);
+        
+     //   document.querySelector('#available').checked = data.studentData.searching = 1? true : false;
+        document.querySelector('#desc').value = data.studentData.bio;
+        document.querySelector('#email').value = data.studentData.email;
     
-    for(let i = 0; i < interests.length; i++) {
-      checks.forEach((check) => {
-        if(check.value === interests[i]){
-          check.checked = true;
+        const interests = data.interests;
+        const checks = document.querySelectorAll('input[type=checkbox]');
+        
+        for(let i = 0; i < interests.length; i++) {
+          checks.forEach((check) => {
+            if(check.value === interests[i]){
+              check.checked = true;
+            }
+          });
         }
       });
     }
   });
+
 
   // --- UPDATE USER ---
   $('#descSubmit').click((e) => {
     console.log('begin update');
     const checks = document.querySelectorAll('input[type=checkbox]');
     const interestList = [];
+    const available = document.querySelector('#available').checked ? 1 : 0;
+    console.log('available', available)
+
 
     // to dodge the initial searching box
     for(let i = 1; i < checks.length; i++) {
@@ -185,11 +190,12 @@ const loadStudentProfile = () => {
       userId = session.userId;
       const options = {
         studentId: userId,
-        searching: 1,
+        searching: available,
         interests: interestList,
-        bio: $('#desc').val()
+        bio: $('#desc').val(),
+        email: $('#email').val()
       };
-      console.dir(options);
+      console.log(options);
       $.ajax({
         cache: false,
         type: "POST",
@@ -216,26 +222,30 @@ const loadResearch = () => {
   console.log('research');
   let userRole;
   sendAjax('GET', '/returnSession', null, (session) => {
-    if(session.userRole === 'student') {
-      sendAjax('GET', '/getStudentInfo', null, (data) => {
-        console.log(data);
-        $("#frameContent").empty();
-        
-        makeResults(data.research);
-      });
-    } else if (session.userRole === 'prof') {
-      sendAjax('GET', '/getAllResearch', null, (data) => {
-        console.log(data);
-        $("#frameContent").empty();
-        let profRes = [];
-        data.data.forEach((result) => {
-          if (result.professor === session.userName) {
-            profRes.push(result);
-          }
+    if(session.loggedIn) {
+      if(session.userRole === 'student') {
+        sendAjax('GET', '/getStudentInfo', null, (data) => {
+          console.log(data);
+          $("#frameContent").empty();
+          
+          makeResults(data.research);
         });
-        
-        makeResults(profRes, session.userId);
-      });
+      } else if (session.userRole === 'prof') {
+        sendAjax('GET', '/getProfessorInfo', null, (data) => {
+          console.log(data);
+          $("#frameContent").empty();
+          // let profRes = [];
+          // data.data.forEach((result) => {
+          //   if (result.professor === session.userName) {
+          //     profRes.push(result);
+          //   }
+          // });
+          console.log(session.userId);
+          makeResults(data.research, session.userId);
+        });
+      }
+    } else {
+      window.location.href = '/homepage.html';
     }
   });
 };
@@ -269,12 +279,13 @@ const makeResults = (data, profId) => {
     if($('#userType').text() === 'Student') {
       console.log('user is student');
       $('.createResearchDiv').css('display', 'none');
-      $(button).click((e) => {
-        $(".modal").css('display', 'block');
-        $("#modalResearchName").text(`${research.researchName}`);
-        $("#modalResearchDesc").text(`${research.researchDescription}`);
-      });
     }
+
+    $(button).click((e) => {
+      $(".modal").css('display', 'block');
+      $("#modalResearchName").text(`${research.researchName ? research.researchName: research.name}`);
+      $("#modalResearchDesc").text(`${research.researchDescription ? research.researchDescription: research.description}`);
+    });
   });
   $('#createSubmit').click((e) => {
     const newName = $("#createName").val();
@@ -283,7 +294,7 @@ const makeResults = (data, profId) => {
     console.log(newName, newDesc);
 
     const options = {
-      professor_id: profId,
+      professorId: parseInt(profId),
       name: newName,
       description: newDesc,
       category: 1,
@@ -301,6 +312,7 @@ const makeResults = (data, profId) => {
         console.log(res);
       },
       error: function(xhr, status, error) {
+        console.log(status);
         console.log(error);
       }
     });
@@ -329,8 +341,6 @@ const loadUser = (type) => {
     } else {
       role = 'Guest';
     }
-
-
 
     $('#userName').text(name);
     $('#userType').text(role);
@@ -394,10 +404,12 @@ const signup = () => {
   const role = $("#role").val();
   const name = $("#name").val();
   const pass = $('#pass').val();
+  const email = $('#email').val();
 
   const options = {
     username: username,
     role: role,
+    email: email,
     name: name,
     password: pass
   };
@@ -408,7 +420,7 @@ const signup = () => {
     type: "POST",
     url: 'http://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/create.php',
     data: options,
-    dataType: "json",
+ //   dataType: "json",
     success: (res) => {
       window.location.href = '/login.html';
       console.log(res);
