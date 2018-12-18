@@ -14,50 +14,83 @@ const sendAjax = (type, action, data, callback) => {
   };
 
 const handleGetAllStudents = () => {
-  sendAjax("GET", "/getAllStudents", null, (data) => {
-    var results = Object.keys(data).map(function(key) {
-      return [Number(key), data[key]];
-    });
-    $("#frameContent").empty();
-    results.forEach((obj) => {
-      result = obj[1].studentData;
-      const dataFrame = document.createElement('div');
-      dataFrame.className = "dataFrame";
+  sendAjax('GET', '/returnSession', null, (session) => {
+    sendAjax("GET", "/getAllStudents", null, (data) => {
+      console.log(data);
+      var results = Object.keys(data).map(function(key) {
+        return [Number(key), data[key]];
+      });
+      $("#frameContent").empty();
+      results.forEach((obj) => {
+        console.log(obj);
+        result = obj[1].studentData;
 
-      const name = document.createElement('div');
-      name.className = "nameSection";
+        let catStr = "";
+        console.log(result.interests);
+        if(result.interests !== "null") {
+          const parsedInterests = JSON.parse(result.interests);
+          console.log(parsedInterests, session.filter);
 
-      const nameImg = document.createElement("img");
-      const nameP1 = document.createElement("p");
-      const nameP2 = document.createElement("p");
-      nameP2.className = 'date';
+          let lowerArr = parsedInterests.map((str) => {
+            return str.toLowerCase();
+          });
+          console.log(lowerArr.includes(session.filter));
 
-      nameImg.src = 'userlogo.png';
-      nameImg.id = 'userContentPic';
-      nameP1.innerHTML += `${result.name}`;
-      nameP2.innerHTML += `Grad Date: ${result.gradDate}`;
+          // Filter out unwanted results
+          if(!lowerArr.includes(session.filter) && session.filter !== undefined){
+            return false;
+          }
 
-      $(name).append(nameImg, nameP1, nameP2);
+          for(let i = 0; i < parsedInterests.length; i++) {
+            catStr += parsedInterests[i];
+            if(i != parsedInterests.length-1) {
+              catStr += ", ";
+            }
+          } // The below bit determines if a student with no interests will be listed or not
+        } else if (session.filter !== undefined) {
+            return false;
+        } else {
+          catStr = "N/A";
+        }
 
-      const desc = document.createElement('div');
-      desc.className = "descSection";
-      const descH2 = document.createElement('h2');
-      const bio = document.createElement('p');
+        const dataFrame = document.createElement('div');
+        dataFrame.className = "dataFrame";
 
-      descH2.innerHTML = `Bio`;
-      bio.innerHTML = `${result.bio}`;
+        const name = document.createElement('div');
+        name.className = "nameSection";
 
-      $(desc).append(descH2, bio);
+        const nameImg = document.createElement("img");
+        const nameP1 = document.createElement("p");
+        const nameP2 = document.createElement("p");
+        nameP2.className = 'date';
 
-      const cat = document.createElement('div');
-      cat.className = "categorySection";
-      const catP = document.createElement('p');
-      catP.className = "categoryLabel";
-      catP.innerHTML = `Math`;
+        nameImg.src = 'userlogo.png';
+        nameImg.id = 'userContentPic';
+        nameP1.innerHTML += `${result.name}`;
+        nameP2.innerHTML += `Grad Date: ${result.gradDate}`;
 
-      $(cat).append(catP);
-      $(dataFrame).append(name, desc, cat);
-      $("#frameContent").append(dataFrame);
+        $(name).append(nameImg, nameP1, nameP2);
+
+        const desc = document.createElement('div');
+        desc.className = "descSection";
+        const descH2 = document.createElement('h2');
+        const bio = document.createElement('p');
+
+        descH2.innerHTML = `Bio`;
+        bio.innerHTML = `${result.bio}`;
+
+        $(desc).append(descH2, bio);
+
+        const cat = document.createElement('div');
+        cat.className = "categorySection";
+        const catP = document.createElement('p');
+        catP.className = "categoryLabel";
+
+        catP.innerHTML = catStr;
+        $(cat).append(catP);
+        $(dataFrame).append(name, desc, cat);
+        $("#frameContent").append(dataFrame);
+      });
     });
   });
 };
@@ -65,11 +98,19 @@ const handleGetAllStudents = () => {
 const handleGetAllResearch = () => {
   console.log('get');
   sendAjax("GET", "/getAllResearch", null, (data) => {
-    const results = data.data;
+    console.log(data.filter);
+    const results = data.results.data;
     console.log(results);
     $("#frameContent").empty();
-    Object.values(results).forEach((dataObject) => {
+    const resultArr = Object.values(results).reverse();
+    resultArr.forEach((dataObject) => {
       const result = dataObject.data;
+
+      // Filter out unwanted results
+      if(result.categoryName.toLowerCase() !== data.filter && result.professor !== data.filter && data.filter !== undefined){
+        return false;
+      } 
+
       const dataFrame = document.createElement('div');
       dataFrame.className = "dataFrame";
 
@@ -104,7 +145,6 @@ const handleGetAllResearch = () => {
       $(cat).append(catP);
 
       $(dataFrame).append(name, desc, cat);
-      console.log(result.researchId);
       if($('#userType').text() === 'Student') {
         $(dataFrame).click((e) => {
           $(".modal").css('display', 'block');
@@ -137,6 +177,11 @@ const handleGetAllResearch = () => {
       }
       $("#frameContent").append(dataFrame);
     });
+
+    // Populates the filter dropdown with all of the professors
+    sendAjax('GET', '/getAllProfessors', null, (profs) => {
+      populateDropdown(profs);
+    });
   });
 };
 
@@ -149,24 +194,25 @@ const loadStudentProfile = () => {
       sendAjax('GET', '/getStudentInfo', null, (data) => {
         console.log(data);
         
-     //   document.querySelector('#available').checked = data.studentData.searching = 1? true : false;
+        document.querySelector('#available').checked = data.studentData.searching == "1"? true : false;
         document.querySelector('#desc').value = data.studentData.bio;
         document.querySelector('#email').value = data.studentData.email;
     
         const interests = data.interests;
         const checks = document.querySelectorAll('input[type=checkbox]');
         
-        for(let i = 0; i < interests.length; i++) {
-          checks.forEach((check) => {
-            if(check.value === interests[i]){
-              check.checked = true;
-            }
-          });
+        if(interests) {
+          for(let i = 0; i < interests.length; i++) {
+            checks.forEach((check) => {
+              if(check.value === interests[i]){
+                check.checked = true;
+              }
+            });
+          }
         }
       });
     }
   });
-
 
   // --- UPDATE USER ---
   $('#descSubmit').click((e) => {
@@ -190,7 +236,7 @@ const loadStudentProfile = () => {
       userId = session.userId;
       const options = {
         studentId: userId,
-        searching: available,
+        searching: available.toString(),
         interests: interestList,
         bio: $('#desc').val(),
         email: $('#email').val()
@@ -206,11 +252,22 @@ const loadStudentProfile = () => {
           console.log(res);
         },
         error: function(xhr, status, error) {
+          console.log(status);
           console.log(error);
         }
       });
     });
   });
+
+  // --- DELETE USER ---
+  $('#deleteButton').click((e) => {
+    e.preventDefault();
+
+    sendAjax("GET", '/returnSession', null, (session) => {
+      userId = session.userId;
+      deleteUser(userId);
+    });
+  })
 };
 
 const loadHomepage = () => {
@@ -252,7 +309,8 @@ const loadResearch = () => {
 
 const makeResults = (data, profId) => {
   console.log(data);
-  data.forEach((research) => {
+  const reverseData = data.reverse();
+  reverseData.forEach((research) => {
     const frame = document.createElement('div');
     frame.className = 'researchDataFrame';
 
@@ -285,6 +343,7 @@ const makeResults = (data, profId) => {
       $(".modal").css('display', 'block');
       $("#modalResearchName").text(`${research.researchName ? research.researchName: research.name}`);
       $("#modalResearchDesc").text(`${research.researchDescription ? research.researchDescription: research.description}`);
+      $("#hiddenResearchId").val(research.researchId);
     });
   });
   $('#createSubmit').click((e) => {
@@ -316,6 +375,10 @@ const makeResults = (data, profId) => {
         console.log(error);
       }
     });
+  });
+
+  $('#deleteResearchButton').click((e) => {
+    console.log($("#hiddenResearchId").val());
   });
 };
 
@@ -420,7 +483,7 @@ const signup = () => {
     type: "POST",
     url: 'http://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/create.php',
     data: options,
- //   dataType: "json",
+    dataType: "json",
     success: (res) => {
       window.location.href = '/login.html';
       console.log(res);
@@ -430,6 +493,72 @@ const signup = () => {
       console.log(status);
       console.log(error);
     }
+  });
+};
+
+const deleteUser = (userId) => {
+  const options = {
+    userId: userId
+  };
+
+  console.log(options);
+  $.ajax({
+    cache: false,
+    type: "POST",
+    url: 'http://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/delete.php',
+    data: options,
+    dataType: "json",
+    success: (res) => {
+      console.log(res);
+      sendAjax('GET', '/signout', null, () =>{
+        window.location.href = '/login.html';
+      });
+    },
+    error: function(xhr, status, error) {
+      window.alert('Something went wrong.');
+      console.log(status);
+      console.log(error);
+    }
+  });
+};
+
+const deleteResearch = () => {
+  const options = {
+    userId: 1
+  };
+
+  console.log(options);
+  $.ajax({
+    cache: false,
+    type: "POST",
+    url: 'http://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/research/delete.php',
+    data: options,
+    dataType: "json",
+    success: (res) => {
+      console.log('deleted');
+      console.log(res);
+    },
+    error: function(xhr, status, error) {
+      window.alert('Something went wrong.');
+      console.log(status);
+      console.log(error);
+    }
+  });
+};
+
+const populateDropdown = (profs) => {
+  $("#professorDropdown").empty();
+  let names = [];
+
+  Object.values(profs).forEach((obj) => {
+    names.push(obj.prof.name);
+  });
+  
+  names.forEach((name) => {
+    const link = document.createElement('a');
+    link.innerHTML = name;
+    link.href = '/homepage.html?filterProfessor=' + name;
+    $("#professorDropdown").append(link);
   });
 };
 

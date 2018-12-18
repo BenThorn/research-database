@@ -40,6 +40,12 @@ app.get('/', (request, response) =>{
 });
 
 app.get('/homepage.html', (request, response) =>{
+  const parsedUrl = query.parse(request._parsedOriginalUrl.query);
+  console.log(parsedUrl);
+  if(parsedUrl != {}){
+    request.session.filter = parsedUrl.category ? parsedUrl.category : parsedUrl.filterProfessor;
+  }
+  console.log(request.session.filter);
   response.writeHead(200, { 'Content-Type': 'text/html' });
   response.write(index);
   response.end();
@@ -118,6 +124,29 @@ app.get('/getAllStudents', (request, response) => {
   });
 });
 
+app.get('/getAllProfessors', (request, response) => {
+  const url = 'http://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/getAllProfessors.php';
+
+  const apiReq = http.get(url, (res) => {
+    res.on('err', (err) => {
+      console.log(err);
+    });
+
+    res.setEncoding('utf8');
+    let rawData = '';
+    res.on('data', (chunk) => { rawData += chunk; });
+    res.on('end', () => {
+      try {
+        const parsedData = JSON.parse(rawData);
+        return response.json(parsedData);
+      } catch (e) {
+        console.log('error');
+        console.error(e.message);
+      }
+    });
+  });
+});
+
 app.get('/getStudentInfo', (request, response) => {
   let url = 'http://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/getStudent.php?';
   let options = '';
@@ -158,7 +187,8 @@ app.get('/returnSession', (request, response) => {
     let info = {
       userId: request.session.userId, 
       userRole: request.session.userRole, 
-      userName: request.session.userName
+      userName: request.session.userName,
+      filter: request.session.filter
     };
 
     if(request.session.loggedIn){
@@ -186,7 +216,7 @@ app.get('/getAllResearch', (request, response) => {
     res.on('end', () => {
       try {
         const parsedData = JSON.parse(rawData);
-        return response.json(parsedData);
+        return response.json({results: parsedData, filter: request.session.filter});
       } catch (e) {
         console.log('error');
         console.error(e.message);
