@@ -1,3 +1,12 @@
+/** Method for sending requests to the node server.
+    Takes the requests type (GET, POST), the url,
+    any possible parameters, and a callback method. 
+ * 
+ * @param {*} type 
+ * @param {*} action 
+ * @param {*} data 
+ * @param {*} callback 
+ */
 const sendAjax = (type, action, data, callback) => {
     $.ajax({
       cache: false,
@@ -13,6 +22,10 @@ const sendAjax = (type, action, data, callback) => {
     });
   };
 
+/**
+ * Gets info for all students in the database. Called on
+ * the professors homepage, and can be filtered.
+ */
 const handleGetAllStudents = () => {
   sendAjax('GET', '/returnSession', null, (session) => {
     sendAjax("GET", "/getAllStudents", null, (data) => {
@@ -22,21 +35,21 @@ const handleGetAllStudents = () => {
       });
       $("#frameContent").empty();
       results.forEach((obj) => {
-        console.log(obj);
         result = obj[1].studentData;
-
-        let catStr = "";
         console.log(result.interests);
-        if(result.interests !== "null") {
+        let catStr = "";
+
+        // This if statement both sets up the categoryString, and filters results.
+        if(result.interests !== "null" && result.interests !== "") {
+          console.log('wtf');
           const parsedInterests = JSON.parse(result.interests);
           console.log(parsedInterests, session.filter);
 
           let lowerArr = parsedInterests.map((str) => {
             return str.toLowerCase();
           });
-          console.log(lowerArr.includes(session.filter));
 
-          // Filter out unwanted results
+          // Filter out unwanted results based on the session's filter
           if(!lowerArr.includes(session.filter) && session.filter !== undefined){
             return false;
           }
@@ -50,9 +63,11 @@ const handleGetAllStudents = () => {
         } else if (session.filter !== undefined) {
             return false;
         } else {
+          // If the filter is undefined, then there is no filter, therefore we can show the student
           catStr = "N/A";
         }
 
+        // Sets up result div with the required info
         const dataFrame = document.createElement('div');
         dataFrame.className = "dataFrame";
 
@@ -69,7 +84,7 @@ const handleGetAllStudents = () => {
         nameP1.innerHTML += `${result.name}`;
         nameP2.innerHTML += `Grad Date: ${result.gradDate}`;
 
-        $(name).append(nameImg, nameP1, nameP2);
+        $(name).append(nameImg, nameP1);
 
         const desc = document.createElement('div');
         desc.className = "descSection";
@@ -78,6 +93,9 @@ const handleGetAllStudents = () => {
 
         descH2.innerHTML = `Bio`;
         bio.innerHTML = `${result.bio}`;
+        if(result.bio === ""){
+          bio.innerHTML = "No bio available."
+        }
 
         $(desc).append(descH2, bio);
 
@@ -95,6 +113,10 @@ const handleGetAllStudents = () => {
   });
 };
 
+/**
+ * Method for getting all the research in the database.
+ * Called on a students homepage.
+ */
 const handleGetAllResearch = () => {
   console.log('get');
   sendAjax("GET", "/getAllResearch", null, (data) => {
@@ -120,7 +142,7 @@ const handleGetAllResearch = () => {
       const nameImg = document.createElement("img");
       const nameP1 = document.createElement("p");
 
-      nameImg.src = 'userlogo.png';
+      nameImg.src = 'facultylogo.png';
       nameImg.id = 'userContentPic';
       nameP1.innerHTML += `${result.professor}`;
 
@@ -146,6 +168,7 @@ const handleGetAllResearch = () => {
 
       $(dataFrame).append(name, desc, cat);
       if($('#userType').text() === 'Student') {
+        // If the user is a student, allow them to click the dataframe to open the request modal.
         $(dataFrame).click((e) => {
           $(".modal").css('display', 'block');
           $("#modalName").text(`${result.name}`);
@@ -157,6 +180,8 @@ const handleGetAllResearch = () => {
                 studentId: session.userId
               }
               console.log(options);
+
+              // Request for a student to assign themselves to the research project.
               $.ajax({
                 cache: false,
                 type: "POST",
@@ -185,15 +210,22 @@ const handleGetAllResearch = () => {
   });
 };
 
+/**
+ * Loads the student user's data into the settings page.
+ * Called on the settings page, which is only available to students.
+ */
 const loadStudentProfile = () => {
   loadUser();
+  // Call to get info from the session.
   sendAjax('GET', '/returnSession', null , (session) => {
     if(!session.loggedIn) {
       window.location.href = '/homepage.html';
     } else {
+      // Call to get student info
       sendAjax('GET', '/getStudentInfo', null, (data) => {
         console.log(data);
         
+        // Update the fields with the returned data.
         document.querySelector('#available').checked = data.studentData.searching == "1"? true : false;
         document.querySelector('#desc').value = data.studentData.bio;
         document.querySelector('#email').value = data.studentData.email;
@@ -215,6 +247,7 @@ const loadStudentProfile = () => {
   });
 
   // --- UPDATE USER ---
+  // Updates a user based on their userId and any of the fields they changed.
   $('#descSubmit').click((e) => {
     console.log('begin update');
     const checks = document.querySelectorAll('input[type=checkbox]');
@@ -232,8 +265,11 @@ const loadStudentProfile = () => {
 
     let userId;
 
+    // Gets the userId to send to the API
     sendAjax("GET", '/returnSession', null, (session) => {
       userId = session.userId;
+      
+      // Post options
       const options = {
         studentId: userId,
         searching: available.toString(),
@@ -241,7 +277,8 @@ const loadStudentProfile = () => {
         bio: $('#desc').val(),
         email: $('#email').val()
       };
-      console.log(options);
+
+      // Post request sent directly to the API
       $.ajax({
         cache: false,
         type: "POST",
@@ -260,9 +297,11 @@ const loadStudentProfile = () => {
   });
 
   // --- DELETE USER ---
+  // Deletes the user's account based on their userId
   $('#deleteButton').click((e) => {
     e.preventDefault();
 
+    // Gets the userId to send to the API
     sendAjax("GET", '/returnSession', null, (session) => {
       userId = session.userId;
       deleteUser(userId);
@@ -270,34 +309,29 @@ const loadStudentProfile = () => {
   })
 };
 
+/**
+ * Calls loaduser with the overload to tell it to do run methods for the homepage
+ */
 const loadHomepage = () => {
-  console.log('homepage');
   loadUser('home');
 };
 
+// Loads the research of a particular user
 const loadResearch = () => {
-  console.log('research');
   let userRole;
   sendAjax('GET', '/returnSession', null, (session) => {
     if(session.loggedIn) {
+
+      // If they're a student, call it normally, otherwise call with overload
       if(session.userRole === 'student') {
         sendAjax('GET', '/getStudentInfo', null, (data) => {
-          console.log(data);
           $("#frameContent").empty();
           
           makeResults(data.research);
         });
       } else if (session.userRole === 'prof') {
         sendAjax('GET', '/getProfessorInfo', null, (data) => {
-          console.log(data);
           $("#frameContent").empty();
-          // let profRes = [];
-          // data.data.forEach((result) => {
-          //   if (result.professor === session.userName) {
-          //     profRes.push(result);
-          //   }
-          // });
-          console.log(session.userId);
           makeResults(data.research, session.userId);
         });
       }
@@ -307,10 +341,17 @@ const loadResearch = () => {
   });
 };
 
+/**
+ * Method for appending the research results to the research page.
+ * Takes data, an array of the results, and profId, an overload when called by a professor
+ * @param {*} data 
+ * @param {*} profId 
+ */
 const makeResults = (data, profId) => {
-  console.log(data);
+  // Reverse so that the last added appears on the top
   const reverseData = data.reverse();
   reverseData.forEach((research) => {
+    // Set up div to be appended
     const frame = document.createElement('div');
     frame.className = 'researchDataFrame';
 
@@ -335,32 +376,51 @@ const makeResults = (data, profId) => {
 
     $('#frameContent').append(frame);
     if($('#userType').text() === 'Student') {
-      console.log('user is student');
+      // If they're a student, they can't create research
       $('.createResearchDiv').css('display', 'none');
     }
 
+    // When the info button is clicked
     $(button).click((e) => {
+      let category;
+      if(research.researchCategory === "1"){
+        category = 'Science';
+      } else if (research.researchCategory === "2"){
+        category = 'Math';
+      } else if (research.researchCategory === "3"){
+        category = 'General';
+      }
+
       $(".modal").css('display', 'block');
       $("#modalResearchName").text(`${research.researchName ? research.researchName: research.name}`);
+      $("#categoryResearchName").text(`${category}`);
       $("#modalResearchDesc").text(`${research.researchDescription ? research.researchDescription: research.description}`);
       $("#hiddenResearchId").val(research.researchId);
     });
   });
+
+  // When the create button is clicked
   $('#createSubmit').click((e) => {
     const newName = $("#createName").val();
     const newDesc = $("#createDesc").val();
 
-    console.log(newName, newDesc);
+    let newCat;
+    const radios = document.querySelectorAll('input[type=radio]');
+    radios.forEach((radio) => {
+      if(radio.checked){
+        newCat = radio.value;
+      }
+    });
 
     const options = {
       professorId: parseInt(profId),
       name: newName,
       description: newDesc,
-      category: 1,
+      category: newCat,
       results: ""
     };
 
-    console.log(options);
+    // Direct API call to create research
     $.ajax({
       cache: false,
       type: "POST",
@@ -377,23 +437,19 @@ const makeResults = (data, profId) => {
     });
   });
 
+  // For deleting a particular research
   $('#deleteResearchButton').click((e) => {
-    console.log($("#hiddenResearchId").val());
+    deleteResearch($("#hiddenResearchId").val())
   });
 };
 
-const loadProfResearch = () => {
-  console.log('profResearch');
-  sendAjax('GET', '/getAllResearch', null, (data) => {
-    console.log(data);
-  });
-};
-
+/**
+ * Called for loading info into the sidebar. 
+ * Takes one parameter, that tells if the page is the homepage or not
+ * @param {*} type 
+ */
 const loadUser = (type) => {
-  console.log('loadUser');
-  console.log(type);
   sendAjax('GET', '/loadUser', null, (data) => {
-    console.log(data);
     let role;
     const name = data.name;
 
@@ -416,28 +472,39 @@ const loadUser = (type) => {
     if(role !== 'Student') {
       $('#settingsButton').css('display', 'none');
     }
+
+    if(role === 'Professor') {
+      document.querySelector('#userPic').src = 'facultylogo.png';
+    }
+
+    // If we're loading the homepage, load the correct results.
     if(type === 'home') {
-      console.log(role);
+      // Guests and students can see research, professors see students
       if(role === 'Student' || role === 'Guest') {
         handleGetAllResearch();
       } else if (role === 'Professor') {
+        $("#professorDropdownButton").css('display', 'none');
         handleGetAllStudents();
       } 
     }
   });
 };
 
+/**
+ * Called when a user hits the login button.
+ * Sends a call to the API to validate the login credentials.
+ */
 const login = () => {
-  console.log('login');
-
   const user = $("input[type='text'").val();
   const pass = $("input[type='password'").val();
 
+  // post options
   const options = {
     username: user,
     password: pass
   };
 
+  // Direct request to API to validate login
   $.ajax({
     cache: false,
     type: "POST",
@@ -446,7 +513,6 @@ const login = () => {
     dataType: "json",
     success: (res) => {
       sendAjax("POST", '/login', {userId: res.id}, (message) => {
-        console.log(message);
         window.location.href = '/homepage.html';
       });
       console.log(res);
@@ -460,15 +526,22 @@ const login = () => {
   
 };
 
-const signup = () => {
-  console.log('signup');
-  
+// Called when user submits the signup form.
+const signup = () => {  
   const username = $("#user").val();
-  const role = $("#role").val();
+  // Get role from radio buttons
+  let role;
+  const radios = document.querySelectorAll('input[type=radio]');
+  radios.forEach((radio) => {
+    if(radio.checked){
+      role = radio.value;
+    }
+  });
   const name = $("#name").val();
   const pass = $('#pass').val();
   const email = $('#email').val();
 
+  // post options
   const options = {
     username: username,
     role: role,
@@ -477,8 +550,8 @@ const signup = () => {
     password: pass
   };
 
-  console.log(options);
-  $.ajax({
+  // API call to create the user
+  $.ajax({ 
     cache: false,
     type: "POST",
     url: 'http://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/create.php',
@@ -496,12 +569,13 @@ const signup = () => {
   });
 };
 
+// Called when user hits the delete button on their profile page
 const deleteUser = (userId) => {
   const options = {
     userId: userId
   };
 
-  console.log(options);
+  // API call to delete user
   $.ajax({
     cache: false,
     type: "POST",
@@ -522,12 +596,13 @@ const deleteUser = (userId) => {
   });
 };
 
-const deleteResearch = () => {
+// Called when a professor hits the delete button on their research
+const deleteResearch = (researchId) => {
   const options = {
-    userId: 1
+    researchId: researchId
   };
 
-  console.log(options);
+  // Api call to delete the research
   $.ajax({
     cache: false,
     type: "POST",
@@ -535,8 +610,7 @@ const deleteResearch = () => {
     data: options,
     dataType: "json",
     success: (res) => {
-      console.log('deleted');
-      console.log(res);
+      location.reload();
     },
     error: function(xhr, status, error) {
       window.alert('Something went wrong.');
@@ -546,6 +620,7 @@ const deleteResearch = () => {
   });
 };
 
+// Inserts the names of all professors into the dropdown menu
 const populateDropdown = (profs) => {
   $("#professorDropdown").empty();
   let names = [];
@@ -562,6 +637,7 @@ const populateDropdown = (profs) => {
   });
 };
 
+// On document load
 $(document).ready(() => {
   console.log('ready');
 
@@ -569,6 +645,4 @@ $(document).ready(() => {
   $('#signOutBtn').click((e) => {
     sendAjax('GET', '/signout', null, null);
   });
-
-  //$('.categoryLabel').scalem();
 });

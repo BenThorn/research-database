@@ -175,7 +175,7 @@ span{
     border-left: none;
 }
 
-#descSubmit{
+#descSubmit, #deleteButton{
 	display: list-item;
 	background-color: #3d3d3d;
 	color: white;
@@ -185,6 +185,11 @@ span{
 	border-radius: 4px;
 	cursor: pointer;
 	transition: all 0.5s;
+}
+
+#deleteButton {
+  background-color: red;
+  margin-left: 10%;
 }
 
 #createContent p{
@@ -220,7 +225,7 @@ span{
 }
 
 #desc{
-	height: 10vh;
+	height: 15vh !important;
 	width: 33%;
 }
 
@@ -319,7 +324,7 @@ span{
 
 #interestContent{
 	margin-left: 10%;
-	margin-top: 6%;
+	margin-top: 3%;
 }
 
 #interestContent p{
@@ -434,6 +439,8 @@ span{
     min-width: 160px;
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
     z-index: 1;
+    overflow: auto;
+    max-height: 250px;
 }
 
 .dropContent a {
@@ -493,6 +500,10 @@ span{
 	flex: 1;
 }
 
+#createForm{
+	display: grid;
+}
+
 .researchInfoSection button{
 	background-color: #df7874;
     color: white;
@@ -510,6 +521,9 @@ span{
 	margin-left: 10%;
 }
 
+#createDesc{
+	margin-bottom: 2%;
+}
 .createResearchDiv button{
 	background-color: #df7874;
     color: white;
@@ -677,6 +691,130 @@ span{
 	background-color: #3d3d3d;
 }
 
+.signUp-btn {
+	padding: 0.7rem 1rem;
+	height: 2.7rem;
+	display: block;
+	border: 0;
+	border-radius: 2px;
+	font-weight: 500;
+	background: none;
+	color: #5f5c5c;
+	text-decoration: none;
+	cursor: pointer;
+	text-align: center;
+	transition: all 0.8s;
+}
+
+#signUpColor {
+	color: #df7874;
+	font-size: .9rem;
+}
+
+#radioBtns {
+	margin-bottom: 2%;
+}
+
+/* Customize the label (the container) */
+.container2 {
+  display: block;
+  position: relative;
+  padding-left: 35px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  font-size: 22px;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.container2 input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.container3 {
+  display: block;
+  position: relative;
+  padding-left: 35px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.container3 input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.checkmark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 25px;
+  width: 25px;
+  background-color: #eee;
+  border-radius: 50%;
+}
+
+.container2:hover input ~ .checkmark {
+  background-color: #ccc;
+}
+
+.container2 input:checked ~ .checkmark {
+  background-color: #ee7170;
+}
+
+.container3:hover input ~ .checkmark {
+  background-color: #ccc;
+}
+
+.container3 input:checked ~ .checkmark {
+  background-color: #ee7170;
+}
+
+
+.checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+.container2 input:checked ~ .checkmark:after {
+  display: block;
+}
+
+.container2 .checkmark:after {
+  top: 9px;
+  left: 9px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: white;
+}
+
+.container3 input:checked ~ .checkmark:after {
+  display: block;
+}
+
+.container3 .checkmark:after {
+  top: 9px;
+  left: 9px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: white;
+}
 
 #loginFooter{
 	color: #847b7b;
@@ -780,13 +918,13 @@ a{
 .modal-content2 {
     background-color: #fefefe;
     display: flex;
-    margin-top: 30vh;
+    margin-top: 20vh;
     margin-left: auto;
     margin-right: auto;
     padding: 20px;
     border: 1px solid #888;
     width: 70%;
-    height: 50%;
+    height: 60%;
 }
 
 /* The Close Button */
@@ -830,12 +968,33 @@ a{
 	transition: all 0.3s;
 }
 
+.modalBtn2 {
+	background-color: #df7874;
+	color: white;
+	padding: 16px;
+	margin-top: 19vh;
+	font-size: 16px;
+	border-radius: 5px;
+	border: none;
+	cursor: pointer;
+	transition: all 0.3s;
+}
+
+.modalBtn2:hover {
+	background-color: #53a7ea;
+
+}
+
 .modalBtn:hover {
     background-color: #53a7ea;
 }
 
 #emptySpace{
 	flex: 1;
+}
+
+#emptySpaceResearch{
+	flex: .5;
 }
 
 /* Modal Window End  */
@@ -900,4 +1059,8 @@ a{
     -webkit-transform: rotate(45deg);
     -ms-transform: rotate(45deg);
     transform: rotate(45deg);
+}
+
+#changeEmail {
+  margin-left: 10%;
 }

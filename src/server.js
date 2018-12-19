@@ -1,14 +1,13 @@
+// Package requires
 const http = require('http');
-const url = require('url');
 const query = require('querystring');
 const fs = require('fs');
 const express = require('express');
 const bodyParser = require('body-parser');
 const getJSON = require('get-json');
 const session = require('express-session');
-const $ = require('jquery');
-const axios = require('axios');
 
+// HTML and assets
 const index = fs.readFileSync(`${__dirname}/../client/homepage.html`);
 const research = fs.readFileSync(`${__dirname}/../client/research.html`);
 const settings = fs.readFileSync(`${__dirname}/../client/settings.html`);
@@ -33,15 +32,18 @@ app.use(session({
   }
 ));
 
+//-- GET ASSETS --
+
+// Default request
 app.get('/', (request, response) =>{
   response.writeHead(200, { 'Content-Type': 'text/html' });
   response.write(index);
   response.end();
 });
 
+// For the homepage. Checks if the homepage has a filter for its results, using the session.
 app.get('/homepage.html', (request, response) =>{
   const parsedUrl = query.parse(request._parsedOriginalUrl.query);
-  console.log(parsedUrl);
   if(parsedUrl != {}){
     request.session.filter = parsedUrl.category ? parsedUrl.category : parsedUrl.filterProfessor;
   }
@@ -51,56 +53,69 @@ app.get('/homepage.html', (request, response) =>{
   response.end();
 });
 
+// For the research page
 app.get('/research.html', (request, response) =>{
   response.writeHead(200, { 'Content-Type': 'text/html' });
   response.write(research);
   response.end();
 });
 
+// For the profile/settings page
 app.get('/settings.html', (request, response) =>{
   response.writeHead(200, { 'Content-Type': 'text/html' });
   response.write(settings);
   response.end();
 });
 
+// For the login page
 app.get('/login.html', (request, response) =>{
   response.writeHead(200, { 'Content-Type': 'text/html' });
   response.write(login);
   response.end();
 });
 
+// For the signup page
 app.get('/register.html', (request, response) => {
   response.writeHead(200, { 'Content-Type': 'text/html' });
   response.write(register);
   response.end();
 });
 
+// For the main script
 app.get('/client.js', (request, response) =>{
   response.writeHead(200, { 'Content-Type': 'application/javascript' });
   response.write(js);
   response.end();
 });
 
+// For the styles
 app.get('/styles.css', (request, response) => {
   response.writeHead(200, { 'Content-Type': 'text/css' });
   response.write(css);
   response.end();
 });
 
+// For the faculty logo
 app.get('/facultylogo.png', (request, response) => {
   response.writeHead(200, { 'Content-Type': 'image/png' });
   response.write(facultyLogo);
   response.end();
 });
 
+// For the student logo
 app.get('/userlogo.png', (request, response) => {
   response.writeHead(200, { 'Content-Type': 'image/png' });
   response.write(userLogo);
   response.end();
 });
 
-// API calls
+//-- API CALLS --
 
+/**
+ * getAllStudents
+ * Returns a response from the API including a list of all students with their
+ * studentData, interests, and research
+ */
 app.get('/getAllStudents', (request, response) => {
   const url = 'http://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/getAllStudents.php';
 
@@ -124,6 +139,11 @@ app.get('/getAllStudents', (request, response) => {
   });
 });
 
+/**
+ * getAllProfessors
+ * Returns a response from the API including a list of all professors
+ * with their name and id. 
+ */
 app.get('/getAllProfessors', (request, response) => {
   const url = 'http://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/getAllProfessors.php';
 
@@ -147,6 +167,11 @@ app.get('/getAllProfessors', (request, response) => {
   });
 });
 
+/**
+ * getStudentInfo
+ * Returns a response from the API including all of the info for a single student,
+ * based on the id from the session.
+ */
 app.get('/getStudentInfo', (request, response) => {
   let url = 'http://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/getStudent.php?';
   let options = '';
@@ -164,6 +189,11 @@ app.get('/getStudentInfo', (request, response) => {
   });
 });
 
+/**
+ * getProfessorInfo
+ * Returns a response from the API including all of the info for a single professor,
+ * based on the id from the session.
+ */
 app.get('/getProfessorInfo', (request, response) => {
   let url = 'http://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/getProfessor.php?';
   let options = '';
@@ -181,7 +211,11 @@ app.get('/getProfessorInfo', (request, response) => {
   });
 });
 
-// YOU WERE GIVING THE SESSION USERID BACK TO THE CLIENT
+/**
+ * returnSession
+ * Returns all of the info currently held in the session, so they
+ * can be easily accessed.
+ */
 app.get('/returnSession', (request, response) => {
   if(request.session){
     let info = {
@@ -202,6 +236,10 @@ app.get('/returnSession', (request, response) => {
   }
 });
 
+/**
+ * getAllResearch
+ * Gets all the research contained in the database, with their names, descriptions, ids, and categories.
+ */
 app.get('/getAllResearch', (request, response) => {
   let url = 'http://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/research/getAll.php';
 
@@ -225,6 +263,10 @@ app.get('/getAllResearch', (request, response) => {
   });
 });
 
+/**
+ * loadUser
+ * Sends back the information fo a single user
+ */
 app.get('/loadUser', (request, response) => {
 
   if(request.session.loggedIn) {
