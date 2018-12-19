@@ -117,7 +117,7 @@ app.get('/userlogo.png', (request, response) => {
  * studentData, interests, and research
  */
 app.get('/getAllStudents', (request, response) => {
-  const url = 'http://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/getAllStudents.php';
+  const url = 'https://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/getAllStudents.php';
 
   const apiReq = http.get(url, (res) => {
     res.on('err', (err) => {
@@ -145,7 +145,7 @@ app.get('/getAllStudents', (request, response) => {
  * with their name and id. 
  */
 app.get('/getAllProfessors', (request, response) => {
-  const url = 'http://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/getAllProfessors.php';
+  const url = 'https://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/getAllProfessors.php';
 
   const apiReq = http.get(url, (res) => {
     res.on('err', (err) => {
@@ -173,7 +173,7 @@ app.get('/getAllProfessors', (request, response) => {
  * based on the id from the session.
  */
 app.get('/getStudentInfo', (request, response) => {
-  let url = 'http://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/getStudent.php?';
+  let url = 'https://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/getStudent.php?';
   let options = '';
   options += 'studentId=' + request.session.userId;
 
@@ -195,7 +195,7 @@ app.get('/getStudentInfo', (request, response) => {
  * based on the id from the session.
  */
 app.get('/getProfessorInfo', (request, response) => {
-  let url = 'http://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/getProfessor.php?';
+  let url = 'https://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/getProfessor.php?';
   let options = '';
   options += 'professorId=' + request.session.userId;
 
@@ -241,7 +241,7 @@ app.get('/returnSession', (request, response) => {
  * Gets all the research contained in the database, with their names, descriptions, ids, and categories.
  */
 app.get('/getAllResearch', (request, response) => {
-  let url = 'http://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/research/getAll.php';
+  let url = 'https://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/research/getAll.php';
 
   const apiReq = http.get(url, (res) => {
     res.on('err', (err) => {
@@ -270,7 +270,7 @@ app.get('/getAllResearch', (request, response) => {
 app.get('/loadUser', (request, response) => {
 
   if(request.session.loggedIn) {
-    const url = 'http://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/get.php?userId=' + request.session.userId;
+    const url = 'https://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/get.php?userId=' + request.session.userId;
 
     getJSON(url, (error, res) => {
       if (!error) {
