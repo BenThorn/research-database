@@ -37,7 +37,7 @@ app.use(session({
 // Default request
 app.get('/', (request, response) =>{
   response.writeHead(200, { 'Content-Type': 'text/html' });
-  response.write(index);
+  response.write(login);
   response.end();
 });
 
