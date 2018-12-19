@@ -4,7 +4,6 @@ const query = require('querystring');
 const fs = require('fs');
 const express = require('express');
 const bodyParser = require('body-parser');
-const getJSON = require('get-json');
 const session = require('express-session');
 
 // HTML and assets
@@ -37,7 +36,7 @@ app.use(session({
 // Default request
 app.get('/', (request, response) =>{
   response.writeHead(200, { 'Content-Type': 'text/html' });
-  response.write(login);
+  response.write(index);
   response.end();
 });
 
@@ -117,7 +116,7 @@ app.get('/userlogo.png', (request, response) => {
  * studentData, interests, and research
  */
 app.get('/getAllStudents', (request, response) => {
-  const url = 'https://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/getAllStudents.php';
+  const url = 'http://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/getAllStudents.php';
 
   const apiReq = http.get(url, (res) => {
     res.on('err', (err) => {
@@ -145,7 +144,7 @@ app.get('/getAllStudents', (request, response) => {
  * with their name and id. 
  */
 app.get('/getAllProfessors', (request, response) => {
-  const url = 'https://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/getAllProfessors.php';
+  const url = 'http://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/getAllProfessors.php';
 
   const apiReq = http.get(url, (res) => {
     res.on('err', (err) => {
@@ -173,19 +172,29 @@ app.get('/getAllProfessors', (request, response) => {
  * based on the id from the session.
  */
 app.get('/getStudentInfo', (request, response) => {
-  let url = 'https://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/getStudent.php?';
+  let url = 'http://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/getStudent.php?';
   let options = '';
   options += 'studentId=' + request.session.userId;
 
   url += options;
 
-  getJSON(url, (error, res) => {
-    if (!error) {
-      return response.json(res);
-    } else {
-      console.log(error);
-      return error;
-    }
+  const apiReq = http.get(url, (res) => {
+    res.on('err', (err) => {
+      console.log(err);
+    });
+
+    res.setEncoding('utf8');
+    let rawData = '';
+    res.on('data', (chunk) => { rawData += chunk; });
+    res.on('end', () => {
+      try {
+        const parsedData = JSON.parse(rawData);
+        return response.json(parsedData);
+      } catch (e) {
+        console.log('error');
+        console.error(e.message);
+      }
+    });
   });
 });
 
@@ -195,19 +204,29 @@ app.get('/getStudentInfo', (request, response) => {
  * based on the id from the session.
  */
 app.get('/getProfessorInfo', (request, response) => {
-  let url = 'https://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/getProfessor.php?';
+  let url = 'http://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/getProfessor.php?';
   let options = '';
   options += 'professorId=' + request.session.userId;
 
   url += options;
 
-  getJSON(url, (error, res) => {
-    if (!error) {
-      return response.json(res);
-    } else {
-      console.log(error);
-      return error;
-    }
+  const apiReq = http.get(url, (res) => {
+    res.on('err', (err) => {
+      console.log(err);
+    });
+
+    res.setEncoding('utf8');
+    let rawData = '';
+    res.on('data', (chunk) => { rawData += chunk; });
+    res.on('end', () => {
+      try {
+        const parsedData = JSON.parse(rawData);
+        return response.json(parsedData);
+      } catch (e) {
+        console.log('error');
+        console.error(e.message);
+      }
+    });
   });
 });
 
@@ -241,7 +260,7 @@ app.get('/returnSession', (request, response) => {
  * Gets all the research contained in the database, with their names, descriptions, ids, and categories.
  */
 app.get('/getAllResearch', (request, response) => {
-  let url = 'https://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/research/getAll.php';
+  let url = 'http://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/research/getAll.php';
 
   const apiReq = http.get(url, (res) => {
     res.on('err', (err) => {
@@ -270,17 +289,27 @@ app.get('/getAllResearch', (request, response) => {
 app.get('/loadUser', (request, response) => {
 
   if(request.session.loggedIn) {
-    const url = 'https://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/get.php?userId=' + request.session.userId;
+    const url = 'http://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/get.php?userId=' + request.session.userId;
 
-    getJSON(url, (error, res) => {
-      if (!error) {
-        request.session.userRole = res.role;
-        request.session.userName = res.name;
-        return response.json(res);
-      } else {
-        console.log('error');
-        return error;
-      }
+    const apiReq = http.get(url, (res) => {
+      res.on('err', (err) => {
+        console.log(err);
+      });
+  
+      res.setEncoding('utf8');
+      let rawData = '';
+      res.on('data', (chunk) => { rawData += chunk; });
+      res.on('end', () => {
+        try {
+          const parsedData = JSON.parse(rawData);
+          request.session.userRole = parsedData.role;
+          request.session.userName = parsedData.name;
+          return response.json(parsedData);
+        } catch (e) {
+          console.log('error');
+          console.error(e.message);
+        }
+      });
     });
   } else {
     return response.json({"role": "Guest"});

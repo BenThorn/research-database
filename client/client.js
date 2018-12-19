@@ -185,7 +185,7 @@ const handleGetAllResearch = () => {
               $.ajax({
                 cache: false,
                 type: "POST",
-                url: 'https://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/assignStudent.php',
+                url: 'http://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/assignStudent.php',
                 data: options,
                 dataType: "json",
                 success: (res) => {
@@ -282,7 +282,7 @@ const loadStudentProfile = () => {
       $.ajax({
         cache: false,
         type: "POST",
-        url: 'https://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/updateStudent.php',
+        url: 'http://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/updateStudent.php',
         data: options,
         dataType: "json",
         success: (res) => {
@@ -424,7 +424,7 @@ const makeResults = (data, profId) => {
     $.ajax({
       cache: false,
       type: "POST",
-      url: 'https://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/research/create.php',
+      url: 'http://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/research/create.php',
       data: options,
       dataType: "json",
       success: (res) => {
@@ -508,7 +508,7 @@ const login = () => {
   $.ajax({
     cache: false,
     type: "POST",
-    url: 'https://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/login.php',
+    url: 'http://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/login.php',
     data: options,
     dataType: "json",
     success: (res) => {
@@ -554,7 +554,7 @@ const signup = () => {
   $.ajax({ 
     cache: false,
     type: "POST",
-    url: 'https://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/create.php',
+    url: 'http://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/create.php',
     data: options,
     dataType: "json",
     success: (res) => {
@@ -579,7 +579,7 @@ const deleteUser = (userId) => {
   $.ajax({
     cache: false,
     type: "POST",
-    url: 'https://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/delete.php',
+    url: 'http://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/user/delete.php',
     data: options,
     dataType: "json",
     success: (res) => {
@@ -606,7 +606,7 @@ const deleteResearch = (researchId) => {
   $.ajax({
     cache: false,
     type: "POST",
-    url: 'https://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/research/delete.php',
+    url: 'http://ist-serenity.main.ad.rit.edu/~iste330t23/research_database/api/research/delete.php',
     data: options,
     dataType: "json",
     success: (res) => {
